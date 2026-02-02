@@ -137,6 +137,37 @@
             box-shadow: 0 4px 8px rgba(39, 174, 96, 0.4);
         }
 
+        .lang-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5%;
+            background: #34495e;
+            padding: 0.3% 0.6%;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(52, 73, 94, 0.3);
+        }
+
+        .lang-toggle button {
+            padding: 0.3% 0.6%;
+            border: 2px solid transparent;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.7vw;
+            font-weight: bold;
+            transition: all 0.2s;
+            color: white;
+            background: transparent;
+        }
+
+        .lang-toggle button.active {
+            background: #3498db;
+            border-color: #2980b9;
+        }
+
+        .lang-toggle button:hover {
+            background: #5d6d7b;
+        }
+
         .speed-control {
             display: flex;
             align-items: center;
@@ -205,7 +236,7 @@
 
         .global-logo {
             position: fixed;
-            top: 1%;
+            top: calc(1% - 10px);
             right: 1%;
             z-index: 1000;
             height: 11.25vh;
@@ -376,14 +407,14 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>无人机飞行实时监控系统</h1>
+                <h1>光伏清洗无人机航线模拟演示系统</h1>
             </div>
         </div>
 
         <div class="grid">
             <!-- 左侧：2D航线地图 -->
             <div class="panel panel-full-height">
-                <div class="panel-title">📍 2D 航线俯视图（OpenStreetMap）</div>
+                <div class="panel-title">2D 航线俯视图</div>
                 <div id="mapContainer"></div>
                 <div class="legend">
                     <div class="legend-item">
@@ -409,12 +440,17 @@
             <div class="right-panel">
                 <!-- 控制按钮 -->
                 <div class="controls">
-                    <label for="fileInput" class="file-label">📂 选择CSV文件</label>
+                    <label for="fileInput" class="file-label">📂 加载航线.csv</label>
                     <input type="file" id="fileInput" accept=".csv">
                     <button id="loadDemoBtn" class="demo-btn">📄 加载演示文件</button>
                     <button id="startBtn" disabled>▶️ 开始飞行</button>
                     <button id="pauseBtn" disabled>⏸️ 暂停</button>
                     <button id="resetBtn" disabled>🔄 重置</button>
+                    <div style="flex-grow: 1;"></div>
+                    <div class="lang-toggle">
+                        <button id="langCN" class="lang-btn active">中文</button>
+                        <button id="langEN" class="lang-btn">English</button>
+                    </div>
                 </div>
 
                 <!-- 进度条 -->
@@ -515,6 +551,111 @@
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
+        // 语言翻译对象
+        const translations = {
+            zh: {
+                loadCSV: '📂 加载航线.csv',
+                loadDemo: '📄 加载演示文件',
+                start: '▶️ 开始飞行',
+                pause: '⏸️ 暂停',
+                resume: '▶️ 继续飞行',
+                reset: '🔄 重置',
+                title: '光伏清洗无人机航线预览系统',
+                speed: '飞行速度:',
+                progress: '进度',
+                stats: '📊 航线统计信息',
+                stats2: '📋 预期飞行参数',
+                realTimeParams: '🎯 实时飞行参数',
+                totalDist: '航线总长度',
+                cleanedDist: '已清洗长度',
+                remainingDist: '剩余长度',
+                coverageRate: '清洗覆盖率',
+                flightTime: '预计飞行时间',
+                avgHeight: '平均高度',
+                minHeight: '最低高度',
+                maxHeight: '最高高度',
+                routeId: '航线ID',
+                routeStatus: '航线状态',
+                routeCleaning: '清洗作业中',
+                routeTransit: '正在前往下一清洗航线',
+                idle: '待机中',
+                flying: '飞行中',
+                spray: '清洗系统',
+                closed: '关闭 ⭕',
+                opened: '开启 ✅',
+                currentWaypoint: '当前航点',
+                longitude: '经度',
+                latitude: '纬度',
+                altitude: '高度',
+                map2D: '2D 航线俯视图',
+                mapHeight: '🗺️ 航线高度分布图',
+                uavHeight: '无人机',
+                routeInBlock: '区块内航线',
+                routeBetweenBlock: '区块间航线',
+                startPoint: '起点',
+                endPoint: '终点',
+                drone: '无人机',
+                height: '高度',
+                loadDemoFailed: '❌ 加载演示文件失败',
+                loadDemoFailedDetails: '请确保 15_3D_waypoints_debug.csv 文件与HTML在同一目录',
+                loadSuccess: '✅ 成功加载',
+                waypoints: '个航点',
+                flightComplete: '✅ 飞行完成！'
+            },
+            en: {
+                loadCSV: '📂 Load Route.csv',
+                loadDemo: '📄 Load Demo File',
+                start: '▶️ Start Flight',
+                pause: '⏸️ Pause',
+                resume: '▶️ Resume Flight',
+                reset: '🔄 Reset',
+                title: 'Photovoltaic Cleaning UAV Flight Preview System',
+                speed: 'Flight Speed:',
+                progress: 'Progress',
+                stats: '📊 Route Statistics',
+                stats2: '📋 Expected Flight Parameters',
+                realTimeParams: '🎯 Real-time Flight Parameters',
+                totalDist: 'Total Route Distance',
+                cleanedDist: 'Cleaned Distance',
+                remainingDist: 'Remaining Distance',
+                coverageRate: 'Coverage Rate',
+                flightTime: 'Estimated Flight Time',
+                avgHeight: 'Average Height',
+                minHeight: 'Minimum Height',
+                maxHeight: 'Maximum Height',
+                routeId: 'Route ID',
+                routeStatus: 'Route Status',
+                routeCleaning: 'Cleaning in Progress',
+                routeTransit: 'Proceeding to Next Cleaning Route',
+                idle: 'Idle',
+                flying: 'Flying',
+                spray: 'Spray System',
+                closed: 'Closed ⭕',
+                opened: 'Opened ✅',
+                currentWaypoint: 'Current Waypoint',
+                longitude: 'Longitude',
+                latitude: 'Latitude',
+                altitude: 'Altitude',
+                map2D: '2D Route Top View',
+                mapHeight: '🗺️ Route Height Distribution',
+                uavHeight: 'UAV',
+                routeInBlock: 'In-Block Route',
+                routeBetweenBlock: 'Between-Block Route',
+                startPoint: 'Start Point',
+                endPoint: 'End Point',
+                drone: 'UAV',
+                height: 'Height',
+                loadDemoFailed: '❌ Failed to Load Demo File',
+                loadDemoFailedDetails: 'Please ensure 15_3D_waypoints_debug.csv is in the same directory as HTML',
+                loadSuccess: '✅ Successfully loaded',
+                waypoints: 'waypoints',
+                flightComplete: '✅ Flight Complete!'
+            }
+        };
+
+        // 当前语言
+        let currentLang = 'zh';
+
         // 全局变量
         let waypointData = [];
         let animationId = null;
@@ -540,12 +681,154 @@
         const resetBtn = document.getElementById('resetBtn');
         const speedSlider = document.getElementById('speedSlider');
         const speedValue = document.getElementById('speedValue');
+        const langCNBtn = document.getElementById('langCN');
+        const langENBtn = document.getElementById('langEN');
+
+        // 语言切换函数
+        function switchLanguage(lang) {
+            currentLang = lang;
+            
+            // 更新按钮状态
+            if (lang === 'zh') {
+                langCNBtn.classList.add('active');
+                langENBtn.classList.remove('active');
+            } else {
+                langCNBtn.classList.remove('active');
+                langENBtn.classList.add('active');
+            }
+            
+            // 更新UI文本
+            updateUILanguage();
+            
+            // 保存到本地存储
+            localStorage.setItem('language', lang);
+        }
+
+        // 更新UI语言
+        function updateUILanguage() {
+            const t = translations[currentLang];
+            
+            // 更新按钮文本
+            document.querySelector('label[for="fileInput"]').textContent = t.loadCSV;
+            loadDemoBtn.textContent = t.loadDemo;
+            startBtn.textContent = isPaused ? t.resume : t.start;
+            pauseBtn.textContent = t.pause;
+            resetBtn.textContent = t.reset;
+            
+            // 更新页面标题
+            document.title = t.title;
+            document.querySelector('.header-left h1').textContent = t.title;
+            
+            // 更新地图标题
+            const panelTitle = document.querySelector('.panel-title');
+            if (panelTitle) {
+                panelTitle.textContent = t.map2D;
+            }
+            
+            // 更新图例
+            const legendItems = document.querySelectorAll('.legend-item span:not(.legend-line):not([style])');
+            if (legendItems.length > 0) {
+                // 找到对应的图例项
+                const legend = document.querySelector('.legend');
+                if (legend) {
+                    const items = legend.querySelectorAll('.legend-item');
+                    if (items.length > 0) {
+                        items[0].querySelector('span:last-child').textContent = t.routeInBlock;
+                        if (items.length > 1) items[1].querySelector('span:last-child').textContent = t.routeBetweenBlock;
+                        if (items.length > 2) items[2].querySelector('span:last-child').textContent = t.startPoint;
+                        if (items.length > 3) items[3].querySelector('span:last-child').textContent = t.endPoint;
+                    }
+                }
+            }
+            
+            // 更新速度标签
+            document.querySelector('.progress-container').querySelector('label').textContent = t.speed;
+            
+            // 更新进度标签
+            document.querySelector('.progress-container').querySelectorAll('label')[1].innerHTML = `${t.progress}<span id="progressPercent" style="font-weight:bold;">0%</span>:`;
+            
+            // 更新所有表格标题和内容
+            const tableTitles = document.querySelectorAll('.table-title');
+            if (tableTitles.length > 0) {
+                tableTitles[0].textContent = t.stats;
+                if (tableTitles.length > 1) {
+                    tableTitles[1].textContent = t.realTimeParams;
+                }
+            }
+            
+            // 获取第一个表格（航线统计信息）的行
+            const firstTable = document.querySelectorAll('.info-table')[0];
+            if (firstTable) {
+                const rows1 = firstTable.querySelectorAll('tr');
+                if (rows1.length > 0) {
+                    rows1[0].cells[0].textContent = t.totalDist;
+                    if (rows1.length > 1) rows1[1].cells[0].textContent = t.cleanedDist;
+                    if (rows1.length > 2) rows1[2].cells[0].textContent = t.remainingDist;
+                    if (rows1.length > 3) rows1[3].cells[0].textContent = t.coverageRate;
+                    if (rows1.length > 4) rows1[4].cells[0].textContent = t.avgHeight;
+                    if (rows1.length > 5) rows1[5].cells[0].textContent = t.minHeight;
+                    if (rows1.length > 6) rows1[6].cells[0].textContent = t.maxHeight;
+                }
+            }
+            
+            // 获取第二个表格（实时飞行参数）的行
+            const secondTable = document.querySelectorAll('.info-table')[1];
+            if (secondTable) {
+                const rows2 = secondTable.querySelectorAll('tr');
+                if (rows2.length > 0) {
+                    rows2[0].cells[0].textContent = t.currentWaypoint;
+                    if (rows2.length > 1) rows2[1].cells[0].textContent = t.longitude;
+                    if (rows2.length > 2) rows2[2].cells[0].textContent = t.latitude;
+                    if (rows2.length > 3) rows2[3].cells[0].textContent = t.altitude;
+                    if (rows2.length > 4) rows2[4].cells[0].textContent = t.routeId;
+                    if (rows2.length > 5) rows2[5].cells[0].textContent = t.routeStatus;
+                    if (rows2.length > 6) rows2[6].cells[0].textContent = t.spray;
+                }
+            }
+
+            // 更新实时状态文本（航线状态/清洗系统）
+            const routeStatus = document.getElementById('routeStatus');
+            const sprayStatus = document.getElementById('sprayStatus');
+            if (routeStatus && sprayStatus) {
+                const hasWaypoints = waypointData.length > 0 && currentIndex < waypointData.length;
+                const isCleaning = hasWaypoints && waypointData[currentIndex].type === 3;
+
+                routeStatus.textContent = hasWaypoints
+                    ? (isCleaning ? t.routeCleaning : t.routeTransit)
+                    : t.idle;
+                routeStatus.style.color = hasWaypoints
+                    ? (isCleaning ? '#27ae60' : '#e67e22')
+                    : '#7f8c8d';
+                routeStatus.style.fontWeight = 'bold';
+
+                sprayStatus.textContent = isCleaning ? t.opened : t.closed;
+                sprayStatus.className = isCleaning ? 'status-on' : 'status-off';
+            }
+
+            // 更新地图标记的弹窗文本
+            if (startMarker) {
+                startMarker.setPopupContent(t.startPoint);
+            }
+            if (endMarker) {
+                endMarker.setPopupContent(t.endPoint);
+            }
+            if (droneMarker && waypointData.length > 0 && currentIndex < waypointData.length) {
+                const waypoint = waypointData[currentIndex];
+                droneMarker.setPopupContent(`${t.drone}<br>${t.height}: ${waypoint.alt.toFixed(2)}m`);
+            }
+        }
+
+        // 初始化语言
+        function initLanguage() {
+            const savedLang = localStorage.getItem('language') || 'zh';
+            switchLanguage(savedLang);
+        }
 
         // 初始化地图容器
         function initMap() {
             if (map) map.remove();
             
-            map = L.map('mapContainer').setView([30, 120], 10);
+            map = L.map('mapContainer').setView([22.30445, 114.17965], 19);
             
             // 添加卫星图层（Esri Satellite）
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -564,6 +847,8 @@
         startBtn.addEventListener('click', startAnimation);
         pauseBtn.addEventListener('click', togglePause);
         resetBtn.addEventListener('click', resetAnimation);
+        langCNBtn.addEventListener('click', () => switchLanguage('zh'));
+        langENBtn.addEventListener('click', () => switchLanguage('en'));
         speedSlider.addEventListener('input', (e) => {
             animationSpeed = parseFloat(e.target.value);
             speedValue.textContent = animationSpeed.toFixed(1) + ' m/s';
@@ -601,11 +886,13 @@
                         if (xhr.status === 200) {
                             parseCSV(xhr.responseText);
                         } else {
-                            alert('❌ 加载演示文件失败: ' + xhr.statusText + '\n请确保 15_3D_waypoints_debug.csv 文件与HTML在同一目录');
+                            const t = translations[currentLang];
+                            alert(`${t.loadDemoFailed}: ${xhr.statusText}\n${t.loadDemoFailedDetails}`);
                         }
                     };
                     xhr.onerror = function() {
-                        alert('❌ 加载演示文件失败\n请确保 15_3D_waypoints_debug.csv 文件与HTML在同一目录');
+                        const t = translations[currentLang];
+                        alert(`${t.loadDemoFailed}\n${t.loadDemoFailedDetails}`);
                     };
                     xhr.send();
                 });
@@ -635,7 +922,8 @@
                 initializeVisualization();
                 startBtn.disabled = false;
                 resetBtn.disabled = false;
-                alert(`✅ 成功加载 ${waypointData.length} 个航点`);
+                const t = translations[currentLang];
+                alert(`${t.loadSuccess} ${waypointData.length} ${t.waypoints}`);
             }
         }
 
@@ -702,7 +990,8 @@
                 weight: 3,
                 opacity: 1,
                 fillOpacity: 0.8
-            }).bindPopup('起点').addTo(routeLayer);
+            }).addTo(routeLayer);
+            startMarker.bindPopup(translations[currentLang].startPoint);
 
             const endPos = [waypointData[waypointData.length - 1].lat, waypointData[waypointData.length - 1].lon];
             endMarker = L.circleMarker(endPos, {
@@ -712,7 +1001,8 @@
                 weight: 3,
                 opacity: 1,
                 fillOpacity: 0.8
-            }).bindPopup('终点').addTo(routeLayer);
+            }).addTo(routeLayer);
+            endMarker.bindPopup(translations[currentLang].endPoint);
 
             // 自动缩放到路线范围
             const latLngs = waypointData.map(w => [w.lat, w.lon]);
@@ -760,7 +1050,8 @@
         function animate() {
             if (isPaused || currentIndex >= waypointData.length) {
                 if (currentIndex >= waypointData.length) {
-                    alert('✅ 飞行完成！');
+                    const t = translations[currentLang];
+                    alert(t.flightComplete);
                     resetAnimation();
                 }
                 return;
@@ -801,6 +1092,7 @@
         function updateUI() {
             const waypoint = waypointData[currentIndex];
             const progress = (currentIndex / (waypointData.length - 1)) * 100;
+            const t = translations[currentLang];
             
             document.getElementById('progressBar').style.width = progress + '%';
             document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
@@ -813,21 +1105,21 @@
             // 航线状态显示
             const routeStatus = document.getElementById('routeStatus');
             if (waypoint.type === 3) {
-                routeStatus.textContent = '清洗作业中';
+                routeStatus.textContent = t.routeCleaning;
                 routeStatus.style.color = '#27ae60';
                 routeStatus.style.fontWeight = 'bold';
             } else {
-                routeStatus.textContent = '正在前往下一清洗航线';
+                routeStatus.textContent = t.routeTransit;
                 routeStatus.style.color = '#e67e22';
                 routeStatus.style.fontWeight = 'bold';
             }
             
             const sprayStatus = document.getElementById('sprayStatus');
             if (waypoint.type === 3) {
-                sprayStatus.textContent = '开启 💧';
+                sprayStatus.textContent = t.opened;
                 sprayStatus.className = 'status-on';
             } else {
-                sprayStatus.textContent = '关闭 ⭕';
+                sprayStatus.textContent = t.closed;
                 sprayStatus.className = 'status-off';
             }
 
@@ -849,8 +1141,9 @@
                 className: 'drone-marker'
             });
 
+            const t = translations[currentLang];
             droneMarker = L.marker([waypoint.lat, waypoint.lon], { icon: droneIcon })
-                .bindPopup(`无人机<br>高度: ${waypoint.alt.toFixed(2)}m`)
+                .bindPopup(`${t.drone}<br>${t.height}: ${waypoint.alt.toFixed(2)}m`)
                 .addTo(routeLayer);
 
             // 打开弹窗
@@ -859,6 +1152,7 @@
 
         // 页面加载时初始化地图
         window.addEventListener('load', function() {
+            initLanguage();
             initMap();
         });
     </script>
